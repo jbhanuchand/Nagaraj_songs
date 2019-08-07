@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+
+    <FrameLayout
+        android:id="@+id/content_frame2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/content_frame"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <com.google.android.gms.ads.AdView
+                    android:id="@+id/adView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    ads:adSize="SMART_BANNER"
+                    ads:adUnitId="ca-app-pub-7605970282562833/1096309500" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp">
+
+                    <ImageButton
+                        android:id="@+id/prv"
+                        android:layout_width="75dp"
+                        android:layout_height="60dp"
+                        android:layout_alignParentLeft="true"
+                        android:onClick="playPrevious"
+                        android:src="@drawable/ic_skipprevious" />
+
+                    <ImageButton
+                        android:id="@+id/playpause"
+                        android:layout_width="75dp"
+                        android:layout_height="60dp"
+                        android:layout_centerHorizontal="true"
+                        android:onClick="playPause"
+                        android:src="@drawable/ic_pause" />
+
+                    <ImageButton
+                        android:id="@+id/next"
+                        android:layout_width="75dp"
+                        android:layout_height="60dp"
+                        android:layout_alignParentRight="true"
+                        android:onClick="playNext"
+                        android:src="@drawable/ic_skipnext" />
+                </RelativeLayout>
+
+                <ImageView
+                    android:id="@+id/godImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:layout_marginTop="1dp"
+                    android:background="#FFFFFF"
+                    android:gravity="center" />
+
+                <TextView
+                    android:id="@+id/songName"
+                    android:layout_width="match_parent"
+                    android:layout_height="65dp"
+                    android:text="mysong"
+                    android:textAlignment="center"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="25dp"
+                    android:textStyle="bold" />
+
+                <RelativeLayout
+                    android:id="@+id/progressContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:layout_marginTop="5dp">
+
+                    <TextView
+                        android:id="@+id/downloadingText"
+                        android:layout_width="match_parent"
+                        android:layout_height="35dp"
+                        android:text="Downloading"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimaryDark"
+                        android:textSize="25dp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/downloadingValue"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/downloadingText"
+                        android:layout_centerHorizontal="true"
+                        android:text="0%"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimaryDark"
+                        android:textSize="25dp"
+                        android:textStyle="bold" />
+
+                    <ProgressBar
+                        android:id="@+id/progressBar"
+                        style="@android:style/Widget.ProgressBar.Horizontal"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/downloadingValue"
+                        android:layout_marginTop="0dp"
+                        android:maxHeight="20dip"
+                        android:minHeight="20dip" />
+                </RelativeLayout>
+
+                <ListView
+                    android:id="@+id/songsList"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="5dp"
+                    android:layout_height="400dp" />
+            </LinearLayout>
+        </ScrollView>
+    </FrameLayout>
+
+
+    <android.support.design.widget.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="200dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true">
+
+        <ListView
+            android:id="@+id/left_drawer"
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:background="#111"
+            android:choiceMode="singleChoice"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="5dp" />
+    </android.support.design.widget.NavigationView>
+
+</android.support.v4.widget.DrawerLayout>
