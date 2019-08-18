@@ -2,13 +2,17 @@ package god.bhagwan.bhajans.mantra;
 
 import android.Manifest;
 import android.app.AlarmManager;
+import android.app.Dialog;
 import android.app.PendingIntent;
+import android.app.WallpaperManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -17,6 +21,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -26,6 +31,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -76,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
     String groupNames[];
     String songNames[];
     ImageView godImage;
+    Dialog setWallpaperDialog;
 
     RelativeLayout progressContent;
     TextView downloadingValue;
@@ -87,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
     TextView songName;
     Context appContext;
     InterstitialAd mInterstitialAd;
+    WallpaperManager wallpaperManager;
 
 
     //===================================activity life cycle methods start==============================
@@ -116,6 +124,15 @@ public class MainActivity extends AppCompatActivity {
         progressContent = (RelativeLayout) findViewById(R.id.progressContent);
         downloadingValue = (TextView) findViewById(R.id.downloadingValue);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+
+        wallpaperManager = WallpaperManager.getInstance(this);
+
+
+        setWallpaperDialog = new Dialog(this);
+        setWallpaperDialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        setWallpaperDialog.setContentView(getLayoutInflater().inflate(R.layout.set_as_wallpaper,null));
+
+
 
         progressContent.setVisibility(View.INVISIBLE);
 
@@ -167,6 +184,14 @@ public class MainActivity extends AppCompatActivity {
                 playOnTap(position);
             }
         });
+
+        godImage.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                setWallpaperDialog.show();
+                return true;
+            }
+        });
         if (mediaPlayer != null) {
             mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
@@ -180,6 +205,56 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     }
+
+    public void setWallpaper(View v){
+
+        ArrayList<Song> mysongs = groups.get(currentGroupPlaying).songs;
+        Song song = mysongs.get(currentSongPlaying);
+        try {
+            if (song.location_source.equals("res")) {
+                int drawableID = getResources().getIdentifier(song.image, "drawable", getPackageName());
+                wallpaperManager.setResource(drawableID);
+            } else {
+                Uri contentURI=getImageContentUri(appContext,offlineSongsLocation + File.separator + song.image);
+                try {
+                    Intent intent = wallpaperManager.getCropAndSetWallpaperIntent(contentURI);
+                    startActivityForResult(intent, 19);     //some random number
+                } catch (IllegalArgumentException e) {
+                    // Seems to be an Oreo bug - fall back to using the bitmap instead
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(appContext.getContentResolver(), contentURI);
+                    wallpaperManager.setBitmap(bitmap);
+                }
+            }
+        }
+        catch(Exception e){
+            Log.d("bhanuchandsongs", "failed to set wallpaper : ");
+            e.printStackTrace();
+        }
+        setWallpaperDialog.hide();
+    }
+
+    public static Uri getImageContentUri(Context context, String absPath) {
+
+        Cursor cursor = context.getContentResolver().query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                , new String[] { MediaStore.Images.Media._ID }
+                , MediaStore.Images.Media.DATA + "=? "
+                , new String[] { absPath }, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
+            return Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI , Integer.toString(id));
+
+        } else if (!absPath.isEmpty()) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DATA, absPath);
+            return context.getContentResolver().insert(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        } else {
+            return null;
+        }
+    }
+
 
     @Override
     protected void onDestroy() {
@@ -479,13 +554,13 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        boolean downloadSongOffline(String url_string) {
+        boolean downloadSongOffline(String urlString) {
             try {
                 File folder = new File(offlineSongsLocation);
                 if (folder.exists() || (!folder.exists() && folder.mkdirs())) {
-                    File file = new File(Environment.getExternalStorageDirectory() + File.separator + ".ngsongs" + File.separator + url_string);
-                    url_string = webDomainURLSongsDownloads + url_string;
-                    java.net.URL url = new URL(url_string);
+                    File file = new File(Environment.getExternalStorageDirectory() + File.separator + ".ngsongs" + File.separator + urlString);
+                    urlString = webDomainURLSongsDownloads + urlString;
+                    java.net.URL url = new URL(urlString);
                     URLConnection urlConnection = url.openConnection();
                     file.createNewFile();
                     FileOutputStream fos = new FileOutputStream(file);
@@ -565,9 +640,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public boolean getRandomBoolean() {
-        Random random = new Random();
-        boolean temp = random.nextBoolean();
-        return temp;
+        return new Random().nextBoolean();
     }
 
     //=================================PERMISSION ZONE START=====================================================
